@@ -79,6 +79,18 @@ uint16_t count = 0;
 //}
 
 
+void TWI_masterInit()
+{
+    TWBR = 10;
+    TWSR = 0x00;
+//    TWAR = 0x02;
+//    TWAMR = 0x00;
+    TWCR = (1 << TWEA) | (1 << TWEN);
+}
+
+
+
+
 
 
 void USART_Init( unsigned int baud )
@@ -195,7 +207,7 @@ bool TWI_SLA(int8_t address, bool write){
         TWDR = address<<1; //Load SLA_W into TWDR Register.
     }
     else {
-        TWDR = ((address<<1) | 1);//~((~address)<<1); //Load SLA_R into TWDR Register.
+        TWDR = ((address<<1) | 0x01);//~((~address)<<1); //Load SLA_R into TWDR Register.
     }
     
     TWCR = (1<<TWINT) | (1<<TWEN); // Clear TWINT bit in TWCR to start transmission of address
@@ -264,13 +276,13 @@ int16_t TWI_read(bool last_byte){
     if (last_byte) {
         if(TW_STATUS == TW_MR_DATA_NACK){
             data = TWDR;
-            ERROR('N');
+            //ERROR('N');
         }
 
     }
     else {
         if(TW_STATUS == TW_MR_DATA_ACK){
-            ERROR('M');
+            //ERROR('M');
             data = TWDR;
         }
 
@@ -370,9 +382,11 @@ void Init_adc(){
 void read_and_transmit_ADC_data(){
     uint8_t i = 0;
     int16_t measured_value = 0;
+    //int16_t measured_value_2 = 0;
     float measured_value_f = 0;
     int16_t test_value_1 = 0;
-    int8_t test_value_2 = 0;
+    int16_t test_value_2 = 0;
+    //int16_t test_value_3 = 0;
     
     // This is this to point to the conversion register and put an inital value into the measured value.
 //    if (TWI_beginTransmission(ADS1115, true)) {
@@ -387,6 +401,8 @@ void read_and_transmit_ADC_data(){
 ////    TWI_SLA(ADS1115, false);
 //    TWI_endTransmission();
     //_delay_ms(40);
+
+    
     TWI_beginTransmission(ADS1115, false);
 //    if (TWI_repeated_start()) {
 //        successful('a');
@@ -406,43 +422,71 @@ void read_and_transmit_ADC_data(){
 //        //successful('7');
 //    }
     
-    test_value_1 = TWI_read(false) << 8;
-    measured_value = test_value_1;//TWI_read(false) << 8; // This shifts the bits over 8 places to the left.
+    test_value_1 = TWI_read(false);// << 8;
+    
 
 //    TWI_repeated_start();
 //    TWI_SLA(ADS1115, false);
-    
+    //_delay_us(100);
     
     
     test_value_2 = TWI_read(true);
-    measured_value |= test_value_2;//TWI_read(true); // This masks bits 8 to 15 and adds the rest of the data to bits 0 through 7.
+    
 //    TWI_nack(TW_MR_SLA_NACK);
-    //TWI_read(true);
+    
+    
+    
+    //test_value_3 = TWI_read(true);
     TWI_endTransmission();
     
+    
+    
+    measured_value = test_value_1 << 8;//TWI_read(false) << 8; // This shifts the bits over 8 places to the left.
+    measured_value |= test_value_2;//TWI_read(true); // This masks bits 8 to 15 and adds the rest of the data to bits 0 through 7.
+    //test_value_3 = (~measured_value) + 0x01;
+    //measured_value_2 |= test_value_3;
     // account for bias if any
     //measured_value += BIAS;
     
+    
 
     
-    sprintf(str1, "%x", test_value_1); // converts the current count iteration to a string
+//    sprintf(str1, "%x", test_value_1); // converts the current count iteration to a string
+//
+//    i = 0;
+//    while(str1[i] != '\0'){ // loop till the null character is reached.
+//        USART_Transmit(str1[i]); // send the current count to the bluetooth module
+//        i++;
+//    }
+//    USART_Transmit('\r'); // send the text to the bluetooth module
+//
+//
+//    sprintf(str1, "%x", test_value_2); // converts the current count iteration to a string
+//
+//    i = 0;
+//    while(str1[i] != '\0'){ // loop till the null character is reached.
+//        USART_Transmit(str1[i]); // send the current count to the bluetooth module
+//        i++;
+//    }
+//    USART_Transmit('\r'); // send the text to the bluetooth module
+    
+//    sprintf(str1, "%x", test_value_3); // converts the current count iteration to a string
+//
+//    i = 0;
+//    while(str1[i] != '\0'){ // loop till the null character is reached.
+//        USART_Transmit(str1[i]); // send the current count to the bluetooth module
+//        i++;
+//    }
+//    USART_Transmit('\r'); // send the text to the bluetooth module
+//
 
-    i = 0;
-    while(str1[i] != '\0'){ // loop till the null character is reached.
-        USART_Transmit(str1[i]); // send the current count to the bluetooth module
-        i++;
-    }
-    USART_Transmit('\r'); // send the text to the bluetooth module
 
 
-    sprintf(str1, "%x", test_value_2); // converts the current count iteration to a string
-
-    i = 0;
-    while(str1[i] != '\0'){ // loop till the null character is reached.
-        USART_Transmit(str1[i]); // send the current count to the bluetooth module
-        i++;
-    }
-    USART_Transmit('\r'); // send the text to the bluetooth module
+    
+    
+    
+    
+    
     
     sprintf(str1, "Data: %d", measured_value); // converts the current count iteration to a string
 
@@ -482,6 +526,51 @@ void read_and_transmit_ADC_data(){
         i++;
     }
     USART_Transmit('\r'); // send the text to the bluetooth module
+    
+    
+    
+    
+    
+    
+    
+    
+    
+//
+//    measured_value_f = test_value_3;
+//    measured_value_f *= MVPS;
+//
+//
+//    char *tmpSign1 = (measured_value_f < 0) ? "-" : "";
+//    float tmpVal1 = (measured_value_f < 0) ? -measured_value_f : measured_value_f;
+//
+//    int tmpInt11 = tmpVal1;                  // Get the integer (678).
+//    float tmpFrac1 = tmpVal1 - tmpInt11;      // Get fraction (0.0123).
+//    int tmpInt21 = trunc(tmpFrac * 10000);  // Turn into integer (123).
+//
+//    // Print as parts, note that you need 0-padding for fractional bit.
+//
+//    sprintf (str1, "adc_read = %s%d.%04d mV\n", tmpSign1, tmpInt11, tmpInt21);
+//
+//
+//
+//
+//
+//    //sprintf(str1, "Data: %f", measured_value_f); // converts the current count iteration to a string
+//
+//    i = 0;
+//    while(str1[i] != '\0'){ // loop till the null character is reached.
+//        USART_Transmit(str1[i]); // send the current count to the bluetooth module
+//        i++;
+//    }
+//    USART_Transmit('\r'); // send the text to the bluetooth module
+//
+//
+//
+//
+//
+    
+    
+    
 
 }
 
@@ -575,6 +664,7 @@ int main(void)
 {
     USART_Init(BAUD_RATE_REGISTER); // initialize the baudrate of the uart
     
+    //TWI_masterInit();
     Init_adc();
     
     //read_config_register();
@@ -589,10 +679,11 @@ int main(void)
         //sprintf(str, "%d", count); // converts the current count iteration to a string
         
         /* insert your main loop code here */
-        _delay_ms(50);  /* max is 262.14 ms / F_CPU in MHz */
+        _delay_ms(40);  /* max is 262.14 ms / F_CPU in MHz */
         PORTD ^= 1 << 4;    /* toggle the LED */
-        _delay_ms(250); // add a 1 second delay
+        _delay_ms(40); // add a 1 second delay
 
+        
         read_and_transmit_ADC_data();
         //read_config_register();
         
