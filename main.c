@@ -4,12 +4,13 @@
  * License: <insert your license reference here>
  */
 #define F_CPU 8000000    // AVR clock frequency in Hz, used by util/delay.h
+#define ACUTAL_CLK_F 7333333.0
 #define BAUD_RATE 115200
 #define BAUD_RATE_REGISTER (F_CPU/(16*BAUD_RATE))-1 // formula to set the baud rate register
 
 #define GAIN 5.1
-#define R1 55060 // ideally should be 56k
-#define R2 3259 // ideally should be 3.3k
+#define R1 150000 // ideally should be 150k
+#define R2 11090 // ideally should be 11k
 #define VOLTAGE_DIVIDER R2/(R1+R2) // the goal is t0 get at divition of 2.048/36 which is about 0.056
 #define SHUNT_VOLTAGE_LIMIT 0.05 // 500 amps gives 50 mv
 #define SHUNT_AMP_LIMIT 200
@@ -26,12 +27,17 @@
 #define CONFIG_REGISTER 0x01 // address for the configuration register on the ADS1115
 
 
+//#define TIMER0_OVF 0x002E // interrupt vector address
+
+
 #include <stdbool.h>
 #include <util/twi.h>
 #include <util/delay.h>
 #include <avr/io.h>
 #include "iot_uart.h"
 #include "iot_twi.h"
+#include "iot_timer.h"
+#include <avr/interrupt.h>
 
 
 
@@ -47,6 +53,44 @@ char str[10]; // holds the count
 char str1[50]; // holds the count
 uint16_t count = 0;
 
+uint16_t overFlowCount = 0;
+float Time = 0.0;
+
+
+ISR(TIMER0_OVF_vect)
+{
+    ++overFlowCount;
+}
+
+
+void stopAndPrintTimer0(){
+	uint8_t endTime = 0;
+	int16_t upper_bits = 0;
+    int16_t lower_bits = 0;
+    char text[30] = "\t\t\t\t\tTimer: ";
+    char text1[30] = " ms\r";
+
+
+    stop_timer0();
+
+
+    endTime = TIM16_ReadTCNT0();
+    TIM16_WriteTCNT0(0x00); // reset the timer to 0
+
+
+    Time = 8.0*(overFlowCount*256.0+endTime)*1000.0/ACUTAL_CLK_F;
+
+    uart_print_string(text);
+    //uart_print_int(endTime);
+    uart_print_float(Time);
+    uart_print_string(text1);
+
+
+    overFlowCount = 0;
+
+
+}
+
 
 
 void set_config_register(int8_t upper_bits, int8_t lower_bits){
@@ -55,7 +99,7 @@ void set_config_register(int8_t upper_bits, int8_t lower_bits){
     TWI_write(upper_bits);
     TWI_write(lower_bits);
     TWI_endTransmission();
-    _delay_ms(50);
+    _delay_ms(15);
 }
 
 
@@ -68,12 +112,12 @@ int16_t read_ADC(){
     TWI_beginTransmission(ADS1115, true);
     TWI_write(CONVERSION_REGISTER);
     TWI_endTransmission();
-
+//start_timer0();
     TWI_beginTransmission(ADS1115, false);
     upper_bits = TWI_read(false) << 8;
     lower_bits = TWI_read(true);
     TWI_endTransmission();
-
+//topAndPrintTimer0();
     upper_bits |= lower_bits; // This masks bits 8 to 15 and adds the rest of the data to bits 0 through 7.
     return upper_bits;
 }
@@ -110,7 +154,7 @@ void uart_print_float(float data){
 }
 
 void uart_print_string(char *text){//, int var2){
-    uint8_t i = 0;
+    //uint8_t i = 0;
     while(*text != '\0'){ // loop till the null character is reached.
         USART_Transmit(*text); // send the current count to the bluetooth module
         //i++;
@@ -120,8 +164,14 @@ void uart_print_string(char *text){//, int var2){
 }
 
 int16_t process1(){
+	int16_t data = 0;
+    //start_timer0();
     set_config_register(0x8a, 0x83); // reads the data from a0 and a1
-    return read_ADC();
+    //stopAndPrintTimer0();
+    data=read_ADC();
+    
+
+    return data;
 }
 
 int16_t process2(){
@@ -136,9 +186,11 @@ void generate_message(){
     float shunt_voltage;
     float battery_voltage;
 
+    
     shunt_voltage = (float)process1();
+	//start_timer0();
     battery_voltage = (float)process2();
-
+//stopAndPrintTimer0();
     shunt_voltage *= MVPS;
     battery_voltage *= VPS;
 
@@ -154,8 +206,8 @@ void generate_message(){
 
 int main(void)
 {
+
     USART_Init(BAUD_RATE_REGISTER); // initialize the baudrate of the uart
-    
     DDRD = 1 << 4;  /* make the LED pin an output */
     PORTD ^= 1 << 4;
     /* insert your hardware initialization here */
@@ -163,8 +215,37 @@ int main(void)
         /* insert your main loop code here */
         _delay_ms(40);  /* max is 262.14 ms / F_CPU in MHz */
         PORTD ^= 1 << 4;    /* toggle the LED */
-        _delay_ms(40); // add a 1 second delay
+
+
+        
+        
+        //_delay_ms(40); // add a 1 second delay
+
+        /* Set TCNTn to 0x01FF */
+        // TCNT1H = 0x01;
+        // TCNT1L = 0xFF;
+        
+        
+        //start_timer0();
+
         generate_message();
+
+		//stopAndPrintTimer0();
+
+
+
+
+        // lower_bits = TCNT1L;
+        // upper_bits = TCNT1H << 8;
+        // upper_bits |= lower_bits; // This masks bits 8 to 15 and adds the rest of the data to bits 0 through 7.
+        // /* Read TCNTn into i */
+        // uart_print_string(text);
+        // uart_print_int(upper_bits);
+        // uart_print_string(text1);
+
+
+
+
         PORTD ^= 1 << 4; // flip the state of the 4th pin of the D register. this turns an led on and off.
     }
     return 0;   /* never reached */
