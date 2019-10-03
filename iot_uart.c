@@ -39,3 +39,43 @@ unsigned char USART_Receive( )
    /* Get and return received data from buffer */
    return UDR1;
 }
+
+void uart_print_int(int16_t data){
+    char dataString[20]; 
+    uint8_t i = 0;
+    sprintf(dataString, "%d", data); // converts the current count iteration to a string
+    while(dataString[i] != '\0'){ // loop till the null character is reached.
+        USART_Transmit(dataString[i]); // send the current count to the bluetooth module
+        i++;
+    }
+}
+
+
+void uart_print_float(float data){
+    char dataString[20];
+
+    char *tmpSign = (data < 0) ? "-" : "";
+    float tmpVal = (data < 0) ? -data : data;
+    int tmpInt1 = tmpVal;                  // Get the integer (678).
+    float tmpFrac = tmpVal - tmpInt1;      // Get fraction (0.0123).
+    int tmpInt2 = trunc(tmpFrac * 10000);  // Turn into integer (123).
+    
+    // Print as parts, note that you need 0-padding for fractional bit.
+    
+    sprintf (dataString, "%s%d.%04d", tmpSign, tmpInt1, tmpInt2);
+
+    uint8_t i = 0;
+    while(dataString[i] != '\0'){ // loop till the null character is reached.
+        USART_Transmit(dataString[i]); // send the current count to the bluetooth module
+        i++;
+    }
+}
+
+
+void uart_print_string(char *text){
+    while(*text != '\0'){ // loop till the null character is reached.
+        USART_Transmit(*text); // send the current count to the bluetooth module
+        text++;
+    }
+
+}

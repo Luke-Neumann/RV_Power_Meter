@@ -69,6 +69,6 @@ void stop_timer0(){
 
 
 	TCCR0B = 0x00; // timer/counter control register B
-	SREG = SREG & 0x5F;
+	SREG = SREG & 0x5F; // disable global interrupts by setting the highest pin in the status register to 0
 
 }
