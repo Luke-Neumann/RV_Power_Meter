@@ -37,6 +37,17 @@ void set_Lo_thresh_register(int8_t upper_bits, int8_t lower_bits){
     _delay_ms(15);
 }
 
+uint8_t generate_upper_config_param(uint8_t OS, uint8_t MUX, uint8_t PGA,
+                                    uint8_t MODE){
+
+    return (OS<<7)|(MUX<<4)|(PGA<<1)|(MODE);
+    
+}
+uint8_t generate_lower_config_param(uint8_t DR, uint8_t COMP_MODE,
+                                    uint8_t COMP_POL, uint8_t COMP_LAT,
+                                    uint8_t COMP_QUE){
+    return (DR<<5)|(COMP_MODE<<4)|(COMP_POL<<3)|(COMP_LAT<<2)|(COMP_QUE) ;
+}
 
 
 
@@ -57,4 +68,13 @@ int16_t get_conversion_register(){
     //topAndPrintTimer0();
     upper_bits |= lower_bits; // This masks bits 8 to 15 and adds the rest of the data to bits 0 through 7.
     return upper_bits;
+}
+
+
+
+
+
+
+void run_ads1115_test(){
+    
 }

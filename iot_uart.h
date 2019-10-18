@@ -22,5 +22,6 @@ unsigned char USART_Receive( );
 void uart_print_int(int16_t data);
 void uart_print_float(float data);
 void uart_print_string(char * text);
+void uart_print_HEX(int16_t data);
 
 #endif /* iot_uart_h */

@@ -15,10 +15,13 @@ void USART_Init( unsigned int baud )
     /* Set baud rate */
     UBRR1H = (unsigned char)(baud>>8);
     UBRR1L = (unsigned char)baud;
-    /* Enable receiver and transmitter */
-    UCSR1B = (1<<(RXEN1))|(1<<TXEN1);
+    // enable the reciver interrupts
+    //UCSR1A = 0;//(1<<(RXC1));
+    /* Enable receiver and transmitter  and enable reciver interrupt*/
+    UCSR1B = (1<<(RXEN1))|(1<<TXEN1|(1<<RXCIE1));
     /* Set frame format: 8data, 2stop bit */
     UCSR1C = (1<<USBS1)|(3<<UCSZ10);
+    SREG = SREG | 0x80; // this turns on global interrupts in the status
 }
 
 void USART_Transmit( unsigned char data )
@@ -50,6 +53,15 @@ void uart_print_int(int16_t data){
     }
 }
 
+void uart_print_HEX(int16_t data){
+    char dataString[20];
+    uint8_t i = 0;
+    sprintf(dataString, "%02x", data); // converts the current count iteration to a string
+    while(dataString[i] != '\0'){ // loop till the null character is reached.
+        USART_Transmit(dataString[i]); // send the current count to the bluetooth module
+        i++;
+    }
+}
 
 void uart_print_float(float data){
     char dataString[20];
