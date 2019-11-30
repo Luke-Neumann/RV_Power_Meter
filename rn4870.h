@@ -14,14 +14,11 @@
 #include <string.h>
 
 bool enter_command_mode(char * address);
-//bool verify_command_mode(char * address);
-void exit_command_mode();
-
+bool exit_command_mode(char * address);
 void get_BLE_info();
-
 void reboot_device();
-
-void get_signal_strength();
+void get_signal_strength(char * address, char * type); // the signal strength in dBm.
+//char * get_signal_strength();
 void connect_to_device(char * address, char * type);
 
 #endif /* rn4870_h */

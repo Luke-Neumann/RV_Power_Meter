@@ -15,7 +15,7 @@ void set_config_register(int8_t upper_bits, int8_t lower_bits){
     TWI_write(upper_bits);
     TWI_write(lower_bits);
     TWI_endTransmission();
-    _delay_ms(15);
+    _delay_ms(20);
 }
 
 void set_Hi_thresh_register(int8_t upper_bits, int8_t lower_bits){
@@ -24,7 +24,7 @@ void set_Hi_thresh_register(int8_t upper_bits, int8_t lower_bits){
     TWI_write(upper_bits);
     TWI_write(lower_bits);
     TWI_endTransmission();
-    _delay_ms(15);
+    _delay_ms(20);
 }
 
 
@@ -34,7 +34,7 @@ void set_Lo_thresh_register(int8_t upper_bits, int8_t lower_bits){
     TWI_write(upper_bits);
     TWI_write(lower_bits);
     TWI_endTransmission();
-    _delay_ms(15);
+    _delay_ms(20);
 }
 
 uint8_t generate_upper_config_param(uint8_t OS, uint8_t MUX, uint8_t PGA,
@@ -49,13 +49,9 @@ uint8_t generate_lower_config_param(uint8_t DR, uint8_t COMP_MODE,
     return (DR<<5)|(COMP_MODE<<4)|(COMP_POL<<3)|(COMP_LAT<<2)|(COMP_QUE) ;
 }
 
-
-
 int16_t get_conversion_register(){
-
     int16_t upper_bits = 0;
     int16_t lower_bits = 0;
-
     // prepares to read the data by pointing to the conversion register.
     TWI_beginTransmission(ADS1115, true);
     TWI_write(CONVERSION_REGISTER);
@@ -69,11 +65,6 @@ int16_t get_conversion_register(){
     upper_bits |= lower_bits; // This masks bits 8 to 15 and adds the rest of the data to bits 0 through 7.
     return upper_bits;
 }
-
-
-
-
-
 
 void run_ads1115_test(){
     

@@ -13,10 +13,12 @@
 
 void enable_interrupt_INT0();
 void disable_interrupt_INT0();
+void enable_interrupt_INT5();
 
+void disable_interrupt_INT5();
 
+void enable_interrupt_PCINT0();
 
-
-
+void disable_interrupt_PCINT0();
 
 #endif /* iot_external_interrupts_h */

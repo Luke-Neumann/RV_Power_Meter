@@ -21,84 +21,57 @@ void TWI_masterInit()
 }
 
 bool TWI_start(){
-    
     TWCR = (1<<TWINT)|(1<<TWSTA)|(1<<TWEN); // Send START condition
-    
     while (!(TWCR & (1<<TWINT))); // Wait for TWINT Flag set. This indicates that the START condition has been transmitted
-    
     if ((TWSR & 0xF8) != TW_START){ //Check value of TWI Status Register. Mask prescaler bits. If status different from START go to ERROR
-        //ERROR('A');
         return false;
     }
-
     return true;
-    
 }
 
 bool TWI_repeated_start(){
-    
     TWCR = (1<<TWINT)|(1<<TWSTA)|(1<<TWEN); // Send START condition
-    
     while (!(TWCR & (1<<TWINT))); // Wait for TWINT Flag set. This indicates that the START condition has been transmitted
-    
     if ((TWSR & 0xF8) != TW_REP_START){ //Check value of TWI Status Register. Mask prescaler bits. If status different from START go to ERROR
-        //ERROR('G');
         return false;
     }
-    
     return true;
-    
 }
 
 bool TWI_SLA(int8_t address, bool write){
-    
-    if (write) {
+    if (write) { // check whether we are reading or writing.
         TWDR = address<<1; //Load SLA_W into TWDR Register.
     }
     else {
-        TWDR = ((address<<1) | 0x01);//~((~address)<<1); //Load SLA_R into TWDR Register.
+        TWDR = ((address<<1) | 0x01); //Load SLA_R into TWDR Register.
     }
-    
     TWCR = (1<<TWINT) | (1<<TWEN); // Clear TWINT bit in TWCR to start transmission of address
-    
     while (!(TWCR & (1<<TWINT))); //Wait for TWINT Flag set. This indicates that the SLA+W has been transmitted, and ACK/NACK has been received.
-    
     if (write) {
         if ((TWSR & 0xF8) != TW_MT_SLA_ACK){ //Check value of TWI Status Register. Mask prescaler bits. If status different from MT_SLA_ACK go to ERROR
-            //ERROR('B');
             return false;
         }
     }
     else {
         if ((TWSR & 0xF8) != TW_MR_SLA_ACK){ //Check value of TWI Status Register. Mask prescaler bits. If status different from MT_SLA_ACK go to ERROR
-            //ERROR('B');
             return false;
         }
     }  
     return true;
 }
 
-
-
 bool TWI_beginTransmission(int8_t address, bool write){
-    
     if (!TWI_start()) { // check for successful start
         return false;
     }
-    
     if (!TWI_SLA(address, write)) {
         return false;
     }
-
     return true;
 }
 
-
-
 int16_t TWI_read(bool last_byte){
     int16_t data = 0;
-    
-    //data = TWDR;
     if (last_byte) {
         TWCR = (1<<TWINT) | (1<<TWEN); //Load DATA into TWDR Register. Clear TWINT bit in TWCR to start transmission of data
     }
@@ -112,7 +85,6 @@ int16_t TWI_read(bool last_byte){
         if(TW_STATUS == TW_MR_DATA_NACK){
             data = TWDR;
         }
-
     }
     else {
         if(TW_STATUS == TW_MR_DATA_ACK){
@@ -124,7 +96,6 @@ int16_t TWI_read(bool last_byte){
     return data;
 }
 
-
 bool TWI_write(int8_t DATA){
     TWDR = DATA;
     TWCR = (1<<TWINT) | (1<<TWEN); //Load DATA into TWDR Register. Clear TWINT bit in TWCR to start transmission of data
@@ -132,18 +103,13 @@ bool TWI_write(int8_t DATA){
     while (!(TWCR & (1<<TWINT))); //Wait for TWINT Flag set. This indicates that the DATA has been transmitted, and ACK/NACK has been received.
     
     if ((TWSR & 0xF8) != TW_MT_DATA_ACK){ // Check value of TWI Status Register. Mask prescaler bits. If status different from MT_DATA_ACK go to ERROR
-        //ERROR('C');
         return false;
     }
     return true;
 }
 
-
-
 void TWI_endTransmission(){
-    
     TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWSTO); //Transmit STOP condition
-    
 }
 
 

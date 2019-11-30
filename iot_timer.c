@@ -54,15 +54,11 @@ void start_timer0(){
 }
 
 void stop_timer0(){
-
-
 	TCCR0B = 0x00; // timer/counter control register B
 	SREG = SREG & 0x5F; // disable global interrupts by setting the highest pin in the status register to 0
-
 }
 
 void start_16_bit_timer1(){
-
     SREG = SREG | 0x80; // this turns on global interrupts in the status register
     TIMSK1 = 0x01; // enables overflow interrupt for timer 0
     TCCR1A = 0x00; // timer/counter control register A
@@ -70,7 +66,6 @@ void start_16_bit_timer1(){
 }
 
 void stop_16_bit_timer1(){
-
     SREG = SREG & 0x5F; // disable global interrupts by setting the highest pin in the status register to 0
     TCCR1B = 0x00; // timer/counter control register B
     TIMSK1 = 0x00; //disable interrupt

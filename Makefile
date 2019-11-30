@@ -5,9 +5,10 @@
 
 DEVICE     = at90usb1286
 CLOCK      = 8000000
+
 PROGRAMMER = -c stk500v2 -P /dev/cu.usbmodem002674262
 OBJECTS    = main.o iot_uart.o iot_twi.o iot_timer.o iot_ads1115.o iot_external_interrupts.o rn4870.o
-FUSES      = -U lfuse:w:0xff:m -U hfuse:w:0x91:m -U efuse:w:0xff:m 
+FUSES      = -U lfuse:w:0xf2:m -U hfuse:w:0x91:m -U efuse:w:0xff:m 
 
 # AT90USB1286 fuse bits used above
 # Example for 8 MHz externl crystal oscillator found on STK525

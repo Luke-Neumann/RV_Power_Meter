@@ -7,6 +7,7 @@
 //
 
 #include "iot_uart.h"
+#include <util/delay.h>
 //#include <avr/io.h>
 
 
@@ -16,12 +17,13 @@ void USART_Init( unsigned int baud )
     UBRR1H = (unsigned char)(baud>>8);
     UBRR1L = (unsigned char)baud;
     // enable the reciver interrupts
-    //UCSR1A = 0;//(1<<(RXC1));
+    //UCSR1A = 2;//(1<<(RXC1));
     /* Enable receiver and transmitter  and enable reciver interrupt*/
     UCSR1B = (1<<(RXEN1))|(1<<TXEN1|(1<<RXCIE1));
     /* Set frame format: 8data, 2stop bit */
     UCSR1C = (1<<USBS1)|(3<<UCSZ10);
     SREG = SREG | 0x80; // this turns on global interrupts in the status
+    _delay_ms(2000);  /* max is 262.14 ms / F_CPU in MHz */
 }
 
 void USART_Transmit( unsigned char data )
@@ -88,6 +90,24 @@ void uart_print_string(char *text){
     while(*text != '\0'){ // loop till the null character is reached.
         USART_Transmit(*text); // send the current count to the bluetooth module
         text++;
+    }
+
+}
+
+
+void uart_print_string_till_endline(char *text){
+    //char temp[100] = "";
+    while(*text != '\0'){ // loop till the null character is reached.
+        //*temp = *text;
+        if (*text == '\r') {
+            //USART_Transmit(*temp); // send the current count to the bluetooth module
+            
+        }
+        
+        
+        
+        text++;
+        //temp++;
     }
 
 }

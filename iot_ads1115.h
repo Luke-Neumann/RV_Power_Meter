@@ -79,14 +79,10 @@
 #define COMP_QUE_2 0x02 //  Assert after four conversions
 #define COMP_QUE_3 0x03 //  Disable comparator and set ALERT/RDY pin to high-impedance (default)
 
-
 #include <stdio.h>
-//#include <avr/io.h>
 #include <stdbool.h>
 #include <util/delay.h>
 #include "iot_twi.h"
-
-
 
 void set_config_register(int8_t upper_bits, int8_t lower_bits);
 int16_t get_conversion_register();
@@ -95,12 +91,5 @@ void set_Lo_thresh_register(int8_t upper_bits, int8_t lower_bits);
 void run_ads1115_test();
 uint8_t generate_upper_config_param(uint8_t OS, uint8_t MUX, uint8_t PGA, uint8_t MODE);
 uint8_t generate_lower_config_param(uint8_t DR, uint8_t COMP_MODE,uint8_t COMP_POL, uint8_t COMP_LAT, uint8_t COMP_QUE);
-//void fast_mode();
-//void start_fast_mode();
-//void stop_fast_mode();
-//void generate_message();
-//int16_t process1();
-//int16_t process2();
-//int16_t process3();
 
 #endif /* iot_ads1115_h */
