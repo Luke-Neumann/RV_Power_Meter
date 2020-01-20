@@ -14,7 +14,7 @@ void enable_interrupt_INT0() {
 }
 
 void disable_interrupt_INT0() {
-    SREG = SREG & 0x5F; // disable global interrupts by setting the highest pin in the status
+    //SREG = SREG & 0x5F; // disable global interrupts by setting the highest pin in the status
     EIMSK = EIMSK & 0xFE; // this disables the int0 interrupt pin.
 }
 
@@ -25,12 +25,11 @@ void enable_interrupt_INT5() {
 }
 
 void disable_interrupt_INT5() {
-    SREG = SREG & 0x5F; // disable global interrupts by setting the highest pin in the status
+    //SREG = SREG & 0x5F; // disable global interrupts by setting the highest pin in the status
     EIMSK = EIMSK & 0xFE; // this disables the int0 interrupt pin.
 }
 
 void enable_interrupt_PCINT0() {
-    // not finished yet
     PCICR = PCICR | 0x01; // this enables the int0 interrupt pin.
     SREG = SREG | 0x80; // this turns on global interrupts in the status register
 }
